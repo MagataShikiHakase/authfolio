@@ -1,3 +1,38 @@
+# Resume & Portfolio Access Web App
+
+A web app for securely sharing your resume and portfolio with different companies — 
+each with their own unique access password.
+
+## 🚀 Features
+- Supabase authentication (Owner / Viewer roles)
+- Company-specific viewing links (password-protected)
+- Resume / Portfolio version management
+- Responsive UI with Tailwind CSS
+- Free hosting via Vercel
+
+---
+
+## 🧩 Tech Stack
+- **Frontend:** Next.js 14 (App Router)
+- **Backend:** Supabase (PostgreSQL + Auth)
+- **Styling:** Tailwind CSS
+- **Deploy:** Vercel
+
+---
+
+## 🗂️ Project Structure
+See [directory structure](#) section in this README for details.
+
+---
+
+## ⚙️ Setup
+
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/yourusername/resume-portfolio-access.git
+   cd resume-portfolio-access
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
