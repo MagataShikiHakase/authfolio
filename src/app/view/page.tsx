@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 // src/app/view/page.tsx
 
 'use client'
@@ -5,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/libs/supabaseClient'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, X, User, Lock, Home } from 'lucide-react'
+//import { Plus, X, User, Lock, Home } from 'lucide-react'
 
 export default function PublicPortfolioPage() {
   const [user, setUser] = useState<any>(null)

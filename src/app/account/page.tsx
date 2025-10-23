@@ -107,7 +107,7 @@ export default function AccountPage() {
   // ======= 公開設定変更 =======
   const handleVisibilityChange = async (field: keyof SectionSetting, value: boolean) => {
     if (!user) return
-    const newSettings = { ...settings, [field]: value }
+    const newSettings = { ...settings, [field]: value as boolean }
     setSettings(newSettings)
 
     const { error } = await supabase
