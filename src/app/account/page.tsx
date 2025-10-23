@@ -120,11 +120,20 @@ export default function AccountPage() {
   }
 
   // ======= 公開パスワード関連 =======
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setMessage('📋 Copied to clipboard!')
+  const handleCopy = async (text: string) => {
+  console.log('Copying text:', text) // ← ここで値を確認
+  if (!text) {
+    setMessage('❌ Nothing to copy')
+    return
   }
-
+  try {
+    await navigator.clipboard.writeText(text)
+    setMessage('📋 Copied to clipboard!')
+  } catch (err) {
+    console.error('Failed to copy!', err)
+    setMessage('❌ Failed to copy')
+  }
+}
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this public link?')) return
     const { error } = await supabase.from('public_ids').delete().eq('id', id)
@@ -146,27 +155,45 @@ export default function AccountPage() {
     return <p className="text-center mt-10 text-gray-600">Loading...</p>
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 px-6 py-12">
+    // <div className="min-h-screen bg-gray-50 text-gray-900 px-6 py-12">
+    <div className="p-6 bg-gray-50 min-h-screen text-gray-800">
       {/* ===== ナビバー ===== */}
-      <nav className="flex justify-center mb-8 gap-6 border-b pb-3">
-        {[
-          { name: 'Dashboard', path: '/dashboard' },
-          { name: 'Account', path: '/account' },
-          { name: 'View', path: '/view' },
-        ].map((item) => (
-          <button
-            key={item.name}
-            onClick={() => (window.location.href = item.path)}
-            className={`px-4 py-2 rounded-md font-medium transition ${
-              item.path === '/account'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
-            }`}
-          >
-            {item.name}
-          </button>
-        ))}
-      </nav>
+<nav className="relative flex justify-center mb-8 gap-6 border-b pb-3">
+  {[
+    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Account', path: '/account' },
+    { name: 'View', path: '/view' },
+  ].map((item) => (
+    <button
+      key={item.name}
+      onClick={() => (window.location.href = item.path)}
+      className={`px-4 py-2 rounded-md font-medium transition ${
+        item.path === '/account'
+          ? 'bg-blue-600 text-white shadow-sm'
+          : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
+      }`}
+    >
+      {item.name}
+    </button>
+  ))}
+
+  {/* 右上の Logout ボタン */}
+  <button
+    onClick={async () => {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        alert('Logout failed')
+        console.error(error)
+      } else {
+        window.location.href = '/login'
+      }
+    }}
+    className="absolute right-10 top-0 px-4 py-2 rounded-md bg-gray-500 hover:bg-gray-600 text-white font-medium transition"
+  >
+    Logout
+  </button>
+</nav>
+
 
       <h1 className="text-4xl font-bold text-center mb-10">Account Settings</h1>
 
@@ -311,7 +338,7 @@ export default function AccountPage() {
 
                   <div className="flex gap-3 mt-3 sm:mt-0">
                     <button
-                      onClick={() => handleCopy(p.password || '')}
+                      onClick={() => handleCopy(p.id || '')}
                       className="flex items-center gap-1 border px-3 py-1 rounded hover:bg-gray-100"
                     >
                       <Copy size={16} /> Copy

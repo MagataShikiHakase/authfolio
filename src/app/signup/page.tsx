@@ -1,4 +1,3 @@
-// src/app/signup/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -16,7 +15,7 @@ export default function SignUpPage() {
     e.preventDefault()
     setError('')
 
-    // 1️⃣ Supabase Authでユーザー作成
+    // Supabase Authでユーザー作成
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -33,11 +32,11 @@ export default function SignUpPage() {
       return
     }
 
-    // 2️⃣ users テーブルにユーザー情報を挿入
+    // users テーブルに挿入
     const { error: userInsertError } = await supabase.from('users').insert([
       {
-        id: user.id, // auth.users.id と揃える
-        email: email,
+        id: user.id,
+        email,
         first_name: '',
         last_name: '',
         phone: '',
@@ -53,11 +52,11 @@ export default function SignUpPage() {
       return
     }
 
-    // 3️⃣ profiles テーブルにプロフィール情報を挿入
+    // profiles テーブルに挿入
     const { error: profileInsertError } = await supabase.from('profiles').insert([
       {
         user_id: user.id,
-        username: username,
+        username,
         avatar_url: '',
       },
     ])
@@ -68,47 +67,68 @@ export default function SignUpPage() {
       return
     }
 
-    // 4️⃣ 成功したらダッシュボードへ
+    // 成功したらダッシュボードへ
     router.push('/dashboard')
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
-      {error && <p className="text-red-500">{error}</p>}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-white via-gray-50 to-gray-100 text-gray-800">
+      <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-[90%] max-w-md border border-gray-200">
+        <h1 className="text-3xl font-semibold mb-6 text-center tracking-wide text-gray-800">
+          Create Your Account
+        </h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2 w-80">
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="border p-2 rounded"
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border p-2 rounded"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border p-2 rounded"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
-        >
-          Sign Up
-        </button>
-      </form>
+        {error && (
+          <p className="text-red-500 text-center mb-4">{error}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="p-3 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="p-3 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="p-3 rounded-xl bg-gray-100 border border-gray-300 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+            required
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium p-3 rounded-xl shadow-md transition-all duration-300 transform hover:scale-[1.02]"
+          >
+            Sign Up
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-gray-600">
+          <p>Already have an account?</p>
+          <button
+            onClick={() => router.push('/login')}
+            className="mt-2 text-blue-600 hover:text-blue-500 font-medium transition-all"
+          >
+            Log in →
+          </button>
+        </div>
+      </div>
+
+      <p className="absolute bottom-4 text-sm text-gray-400">
+        © {new Date().getFullYear()} Authfolio
+      </p>
     </div>
   )
 }
