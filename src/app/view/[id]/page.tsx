@@ -175,9 +175,27 @@ export default function SharedPortfolioPage() {
             <section key={id} id={id} className="snap-start h-screen flex flex-col justify-center items-center px-8 text-center relative">
               {id === 'intro' && (
                 <>
-                  <div className="absolute inset-0 before:absolute before:left-0 before:top-0 before:w-1/2 before:h-[53%] before:bg-[#808080]" />
-                  <div className="absolute inset-0 before:absolute before:right-0 before:top-[83px] before:w-1/2 before:h-[53%] before:bg-[#383c3c]" />
+                  {/* 背景2色部分 — show_intro_bgがtrueのときのみ描画 */}
+    {settings.show_intro_bg && (
+      <>
+        {/* 左半分 */}
+        <div
+          className="absolute top-0 left-0 h-full w-1/2"
+          style={{ 
+            height: '53%',
+            backgroundColor: settings.intro_bg_color_left }}
+        ></div>
 
+        {/* 右半分 */}
+        <div
+          className="absolute top-0 right-0 h-full w-1/2"
+          style={{ 
+            height: '53%',
+            top: '83px',
+            backgroundColor: settings.intro_bg_color_right }}
+        ></div>
+      </>
+    )}
                   {/* 右上ボタン */}
                   <div className="absolute top-6 right-20 flex gap-4 hidden md:flex z-20">
                     {topButtons.map((b) => (
@@ -275,8 +293,14 @@ export default function SharedPortfolioPage() {
                   {id === 'contactlinks' && contact && (
                     <ul className="space-y-2">
                       {contact.email && <li>Email: {contact.email}</li>}
-                      {contact.github_url && <li>GitHub: {contact.github_url}</li>}
-                      {contact.linkedin_url && <li>LinkedIn: {contact.linkedin_url}</li>}
+                      {contact.phone && <li>Phone: {contact.phone}</li>}
+                      {settings.show_github && contact.github_url && (
+      <li>GitHub: <a href={contact.github_url} target="_blank" className="text-blue-600">{contact.github_url}</a></li>
+    )}
+
+    {settings.show_linkedin && contact.linkedin_url && (
+      <li>LinkedIn: <a href={contact.linkedin_url} target="_blank" className="text-blue-600">{contact.linkedin_url}</a></li>
+    )}
                     </ul>
                   )}
                 </motion.div>

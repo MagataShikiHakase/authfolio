@@ -158,41 +158,85 @@ export default function AccountPage() {
     // <div className="min-h-screen bg-gray-50 text-gray-900 px-6 py-12">
     <div className="p-6 bg-gray-50 min-h-screen text-gray-800">
       {/* ===== ナビバー ===== */}
-<nav className="relative flex justify-center mb-8 gap-6 border-b pb-3">
-  {[
-    { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Account', path: '/account' },
-    { name: 'View', path: '/view' },
-  ].map((item) => (
-    <button
-      key={item.name}
-      onClick={() => (window.location.href = item.path)}
-      className={`px-4 py-2 rounded-md font-medium transition ${
-        item.path === '/account'
-          ? 'bg-blue-600 text-white shadow-sm'
-          : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
-      }`}
-    >
-      {item.name}
-    </button>
-  ))}
+<nav className="relative mb-8 border-b pb-3">
+  {/* ======== PC（sm以上）表示 ======== */}
+  <div className="hidden sm:flex justify-center items-center gap-6">
+    {[
+      { name: 'Dashboard', path: '/dashboard' },
+      { name: 'Account', path: '/account' },
+      { name: 'View', path: '/view' },
+    ].map((item) => (
+      <button
+        key={item.name}
+        onClick={() => (window.location.href = item.path)}
+        className={`px-4 py-2 rounded-md font-medium transition ${
+          item.path === '/account'
+            ? 'bg-blue-600 text-white shadow-sm'
+            : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
+        }`}
+      >
+        {item.name}
+      </button>
+    ))}
 
-  {/* 右上の Logout ボタン */}
-  <button
-    onClick={async () => {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        alert('Logout failed')
-        console.error(error)
-      } else {
-        window.location.href = '/login'
-      }
-    }}
-    className="absolute right-10 top-0 px-4 py-2 rounded-md bg-gray-500 hover:bg-gray-600 text-white font-medium transition"
-  >
-    Logout
-  </button>
+    <button
+      onClick={async () => {
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+          alert('Logout failed')
+          console.error(error)
+        } else {
+          window.location.href = '/login'
+        }
+      }}
+      className="px-4 py-2 rounded-md bg-gray-500 hover:bg-gray-600 text-white font-medium transition"
+    >
+      Logout
+    </button>
+  </div>
+
+  {/* ======== スマホ表示 (ドロップダウン) ======== */}
+  <div className="sm:hidden relative">
+    <details className="group inline-block">
+      <summary className="list-none cursor-pointer px-4 py-2 bg-blue-600 text-white font-medium rounded-md w-max">
+        Account
+      </summary>
+      <div className="absolute mt-2 left-0 bg-white shadow-lg rounded-md border flex flex-col w-40 z-10 overflow-hidden">
+        {[
+          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Account', path: '/account' },
+          { name: 'View', path: '/view' },
+        ].map((item) => (
+          <button
+            key={item.name}
+            onClick={() => (window.location.href = item.path)}
+            className={`text-left px-4 py-2 hover:bg-gray-100 ${
+              item.path === '/account' ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
+            }`}
+          >
+            {item.name}
+          </button>
+        ))}
+
+        <button
+          onClick={async () => {
+            const { error } = await supabase.auth.signOut()
+            if (error) {
+              alert('Logout failed')
+              console.error(error)
+            } else {
+              window.location.href = '/login'
+            }
+          }}
+          className="text-left px-4 py-2 text-red-600 hover:bg-red-50 border-t"
+        >
+          Logout
+        </button>
+      </div>
+    </details>
+  </div>
 </nav>
+
 
 
       <h1 className="text-4xl font-bold text-center mb-10">Account Settings</h1>

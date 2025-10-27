@@ -46,6 +46,9 @@ export default function PublicPortfolioPage() {
         show_achievements: publicSettings.achievements,
         show_documents: publicSettings.documents,
         show_contacts: publicSettings.contacts,
+        show_intro_bg: settings.show_intro_bg ?? false,
+        intro_bg_color_left: settings.intro_bg_color_left ?? null,
+        intro_bg_color_right: settings.intro_bg_color_right ?? null,
       },
     ]).select().single()
 
@@ -57,9 +60,27 @@ export default function PublicPortfolioPage() {
     }
   }
 
-const buttonClass =
+  const buttonClass =
   'min-w-[80px] sm:min-w-[130px] h-[40px] border border-gray-500 text-lg tracking-wide flex items-center justify-center transition hover:bg-black hover:text-white shadow-md hover:shadow-lg hover:scale-105 duration-300';
 
+  // --- 追加 state ---
+const [introLeftColor, setIntroLeftColor] = useState<string>('#808080')
+const [introRightColor, setIntroRightColor] = useState<string>('#383c3c')
+const [introTopPx, setIntroTopPx] = useState<number | string>(83) // 必要なら上位置を数値で管理
+const [introHeight, setIntroHeight] = useState<string>('53%') // 例: '53%' や '300px'
+const [introLoadingSave, setIntroLoadingSave] = useState(false)
+
+// sync settings -> local state when settings loaded / changed
+useEffect(() => {
+  if (!settings) return
+  if (settings.intro_bg_color_left) setIntroLeftColor(settings.intro_bg_color_left)
+  if (settings.intro_bg_color_right) setIntroRightColor(settings.intro_bg_color_right)
+  if (typeof settings.show_intro_bg !== 'undefined') {
+    // nothing else needed — settings used directly to show/hide
+  }
+  if (settings.intro_bg_top_px != null) setIntroTopPx(settings.intro_bg_top_px)
+  if (settings.intro_bg_height != null) setIntroHeight(settings.intro_bg_height)
+}, [settings])
 
   // ダークモード保持
   useEffect(() => {
@@ -232,61 +253,80 @@ const buttonClass =
               id={id}
               className="snap-start h-screen flex flex-col justify-center items-center px-8 text-center relative"
             >
-              {/* intro セクション */}
-              {/* intro セクション */}
-  {id === 'intro' && (
-    <>
-    <div className="absolute inset-0 before:absolute before:content-[''] before:left-0 before:top-0 before:w-1/2 before:h-[53%] before:bg-[#808080]" />
-    <div className="absolute inset-0 before:absolute before:content-[''] before:right-0 before:top-[83px] before:w-1/2 before:h-[53%] before:bg-[#383c3c]" />
-      {/* 右上ボタン */}
-<div className="absolute top-6 right-20 flex gap-4 hidden md:flex">
-  {topButtons.map((b) => (
-    <button
-      key={b.name}
-      onClick={() => scrollToSection(b.name.toLowerCase().replace(/\s|\//g, ''))}
-      className={buttonClass}
+              {id === 'intro' && (
+  <>
+    {/* 背景2色部分 — show_intro_bgがtrueのときのみ描画 */}
+    {settings.show_intro_bg && (
+      <>
+        {/* 左半分 */}
+        <div
+          className="absolute top-0 left-0 h-full w-1/2"
+          style={{ 
+            height: '53%',
+            backgroundColor: settings.intro_bg_color_left }}
+        ></div>
+
+        {/* 右半分 */}
+        <div
+          className="absolute top-0 right-0 h-full w-1/2"
+          style={{ 
+            height: '53%',
+            top: '83px',
+            backgroundColor: settings.intro_bg_color_right }}
+        ></div>
+      </>
+    )}
+
+    {/* 右上ボタン */}
+    <div className="absolute top-6 right-20 flex gap-4 hidden md:flex">
+      {topButtons.map((b) => (
+        <button
+          key={b.name}
+          onClick={() => scrollToSection(b.name.toLowerCase().replace(/\s|\//g, ''))}
+          className={buttonClass}
+        >
+          {b.name}
+        </button>
+      ))}
+    </div>
+
+    {/* 中央の白い箱 */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+      className="flex flex-col items-center"
     >
-      {b.name}
-    </button>
-  ))}
-</div>
-
-
-      {/* 中央の白い箱 */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        className="flex flex-col items-center"
-      >
-        <div className="bg-white text-black px-12 py-12 rounded-2xl shadow-lg -translate-y-13">
-          <h1 className="text-6xl mb-4">
-            {user.first_name} {user.last_name}
-          </h1>
-          <p className="text-xl mb-8">{user.major_occupation}</p>
-        </div>
-      </motion.div>
-
-      {/* 左下のボタン */}
-<div className="absolute bottom-24 left-6 flex gap-4 -translate-y-67 z-30 hidden md:flex">
-  {bottomButtons.map((b) => (
-    <button
-      key={b.name}
-      onClick={() => scrollToSection(b.name.toLowerCase().replace(/\s|\//g, ''))}
-      className={buttonClass}
-    >
-      {b.name}
-    </button>
-  ))}
-</div>
-
-      {/* Hello 以下 */}
-      <div className="mt-36 text-center translate-y-12">
-        <h2 className="text-5xl mb-6">Hello.</h2>
-        <p className="max-w-2xl mx-auto text-lg leading-relaxed">{user.description}</p>
+      <div className="bg-white text-black px-12 py-12 rounded-2xl shadow-lg -translate-y-13 relative z-10">
+        <h1 className="text-6xl mb-4">
+          {user.first_name} {user.last_name}
+        </h1>
+        <p className="text-xl mb-8">{user.major_occupation}</p>
       </div>
-    </>
-  )}
+    </motion.div>
+
+    {/* 左下のボタン */}
+    <div className="absolute bottom-24 left-6 flex gap-4 -translate-y-67 z-30 hidden md:flex">
+      {bottomButtons.map((b) => (
+        <button
+          key={b.name}
+          onClick={() => scrollToSection(b.name.toLowerCase().replace(/\s|\//g, ''))}
+          className={buttonClass}
+        >
+          {b.name}
+        </button>
+      ))}
+    </div>
+
+    {/* Hello 以下 */}
+    <div className="mt-36 text-center translate-y-12 relative z-10">
+      <h2 className="text-5xl mb-6">Hello.</h2>
+      <p className="max-w-2xl mx-auto text-lg leading-relaxed">{user.description}</p>
+    </div>
+  </>
+)}
+
+
 
 
 
@@ -367,8 +407,13 @@ const buttonClass =
                     <ul className="space-y-2">
                       {contact.email && <li>Email: {contact.email}</li>}
                       {contact.phone && <li>Phone: {contact.phone}</li>}
-                      {contact.github_url && <li>GitHub: {contact.github_url}</li>}
-                      {contact.linkedin_url && <li>LinkedIn: {contact.linkedin_url}</li>}
+                      {settings.show_github && contact.github_url && (
+      <li>GitHub: <a href={contact.github_url} target="_blank" className="text-blue-600">{contact.github_url}</a></li>
+    )}
+
+    {settings.show_linkedin && contact.linkedin_url && (
+      <li>LinkedIn: <a href={contact.linkedin_url} target="_blank" className="text-blue-600">{contact.linkedin_url}</a></li>
+    )}
                     </ul>
                   )}
                 </motion.div>
@@ -458,9 +503,134 @@ const buttonClass =
       }}
     />
   </div>
+  
 ))}
 
         </div>
+{/* ===== Intro background controls ===== */}
+<hr className="my-3" />
+<div>
+  <p className="font-semibold mb-2">Intro background</p>
+
+  {/* トグル（スイッチ） */}
+  <div className="flex items-center justify-between mb-3">
+    <span>Show intro background</span>
+    <label className="flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={!!settings.show_intro_bg}
+        onChange={async (e) => {
+          const newVal = e.target.checked
+          // 即時UI反映
+          setSettings((prev: any) => ({ ...prev, show_intro_bg: newVal }))
+          // DB反映
+          const { error } = await supabase
+            .from('user_settings')
+            .update({ show_intro_bg: newVal })
+            .eq('user_id', user.id)
+          if (error) {
+            console.error('Failed to update show_intro_bg', error)
+            alert('Failed to update show_intro_bg')
+          }
+        }}
+        className="sr-only peer"
+      />
+      <div className="relative w-11 h-6 bg-gray-300 peer-checked:bg-blue-500 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
+    </label>
+  </div>
+
+  {/* カラーピッカー（左色） */}
+  <div className="mb-2">
+    <label className="block text-sm font-medium mb-1">Left color</label>
+    <div className="flex items-center gap-2">
+      <input
+        type="color"
+        value={introLeftColor}
+        onChange={(e) => {
+          setIntroLeftColor(e.target.value)
+          setSettings((prev: any) => ({ ...prev, intro_bg_color_left: e.target.value }))
+        }}
+        className="w-10 h-10 p-0 border rounded"
+      />
+      <input
+        type="text"
+        value={introLeftColor}
+        onChange={(e) => {
+          const v = e.target.value
+          setIntroLeftColor(v)
+          setSettings((prev: any) => ({ ...prev, intro_bg_color_left: v }))
+        }}
+        className="border px-2 py-1 rounded w-full"
+        placeholder="#808080"
+      />
+      <button
+        onClick={async () => {
+          setIntroLoadingSave(true)
+          const { error } = await supabase
+            .from('user_settings')
+            .update({ intro_bg_color_left: introLeftColor })
+            .eq('user_id', user.id)
+          setIntroLoadingSave(false)
+          if (error) {
+            console.error(error)
+            alert('Failed to save left color')
+          }
+        }}
+        className="px-3 py-1 bg-black text-white rounded"
+      >
+        Save
+      </button>
+    </div>
+  </div>
+
+  {/* カラーピッカー（右色） */}
+  <div className="mb-2">
+    <label className="block text-sm font-medium mb-1">Right color</label>
+    <div className="flex items-center gap-2">
+      <input
+        type="color"
+        value={introRightColor}
+        onChange={(e) => {
+          setIntroRightColor(e.target.value)
+          setSettings((prev: any) => ({ ...prev, intro_bg_color_right: e.target.value }))
+        }}
+        className="w-10 h-10 p-0 border rounded"
+      />
+      <input
+        type="text"
+        value={introRightColor}
+        onChange={(e) => {
+          const v = e.target.value
+          setIntroRightColor(v)
+          setSettings((prev: any) => ({ ...prev, intro_bg_color_right: v }))
+        }}
+        className="border px-2 py-1 rounded w-full"
+        placeholder="#383c3c"
+      />
+      <button
+        onClick={async () => {
+          setIntroLoadingSave(true)
+          const { error } = await supabase
+            .from('user_settings')
+            .update({ intro_bg_color_right: introRightColor })
+            .eq('user_id', user.id)
+          setIntroLoadingSave(false)
+          if (error) {
+            console.error(error)
+            alert('Failed to save right color')
+          }
+        }}
+        className="px-3 py-1 bg-black text-white rounded"
+      >
+        Save
+      </button>
+    </div>
+  </div>
+
+
+  {/* save status */}
+  {introLoadingSave && <p className="text-xs text-gray-500 mt-2">Saving…</p>}
+</div>
 
         <button
           onClick={handleCreatePublicId}

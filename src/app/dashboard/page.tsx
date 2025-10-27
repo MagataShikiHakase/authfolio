@@ -94,16 +94,21 @@ export default function DashboardPage() {
   }, [router])
 
   // === Toggle (settings) - keep immediate
-  const handleToggle = async (key: keyof SectionSetting, value: boolean) => {
-    if (!settings || !user) return
-    const { data, error } = await supabase
-      .from('user_settings')
-      .update({ [key]: value })
-      .eq('user_id', user.id)
-      .select()
-      .single()
-    if (!error) setSettings(data)
-  }
+  // const handleToggle = async (key: keyof SectionSetting, value: boolean) => {
+  //   if (!settings || !user) return
+  //   const { data, error } = await supabase
+  //     .from('user_settings')
+  //     .update({ [key]: value })
+  //     .eq('user_id', user.id)
+  //     .select()
+  //     .single()
+  //   if (!error) setSettings(data)
+  // }
+  const handleToggle = async (field: string, value: boolean) => {
+  setSettings((prev) => ({ ...prev, [field]: value }));
+  await supabase.from('user_settings').update({ [field]: value }).eq('user_id', user.id);
+};
+
 
   // === Generic helpers for local new items and saving ===
 
@@ -319,42 +324,86 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen text-gray-800">
-    {/* ===== ナビゲーションバー ===== */}
-<nav className="relative flex justify-center mb-8 gap-6 border-b pb-3">
-  {[
-    { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Account', path: '/account' },
-    { name: 'View', path: '/view' },
-  ].map((item) => (
-    <button
-      key={item.name}
-      onClick={() => (window.location.href = item.path)}
-      className={`px-4 py-2 rounded-md font-medium transition ${
-        item.path === '/dashboard'
-          ? 'bg-blue-600 text-white shadow-sm'
-          : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
-      }`}
-    >
-      {item.name}
-    </button>
-  ))}
+   {/* ===== ナビゲーションバー ===== */}
+<nav className="relative mb-8 border-b pb-3">
+  {/* ======== PC（sm以上）表示 ======== */}
+  <div className="hidden sm:flex justify-center items-center gap-6">
+    {[
+      { name: 'Dashboard', path: '/dashboard' },
+      { name: 'Account', path: '/account' },
+      { name: 'View', path: '/view' },
+    ].map((item) => (
+      <button
+        key={item.name}
+        onClick={() => (window.location.href = item.path)}
+        className={`px-4 py-2 rounded-md font-medium transition ${
+          item.path === '/dashboard'
+            ? 'bg-blue-600 text-white shadow-sm'
+            : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'
+        }`}
+      >
+        {item.name}
+      </button>
+    ))}
 
-  {/* ✅ 右上に固定された Logout ボタン */}
-  <button
-    onClick={async () => {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        alert('Logout failed')
-        console.error(error)
-      } else {
-        window.location.href = '/login'
-      }
-    }}
-    className="absolute right-10 top-0 px-4 py-2 rounded-md bg-gray-500 hover:bg-gray-600 text-white font-medium transition"
-  >
-    Logout
-  </button>
+    <button
+      onClick={async () => {
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+          alert('Logout failed')
+          console.error(error)
+        } else {
+          window.location.href = '/login'
+        }
+      }}
+      className="px-4 py-2 rounded-md bg-gray-500 hover:bg-gray-600 text-white font-medium transition"
+    >
+      Logout
+    </button>
+  </div>
+
+  {/* ======== スマホ表示 (ドロップダウン) ======== */}
+  <div className="sm:hidden relative">
+    <details className="group inline-block">
+      <summary className="list-none cursor-pointer px-4 py-2 bg-blue-600 text-white font-medium rounded-md w-max">
+        Dashboard
+      </summary>
+      <div className="absolute mt-2 left-0 bg-white shadow-lg rounded-md border flex flex-col w-40 z-10 overflow-hidden">
+        {[
+          { name: 'Dashboard', path: '/dashboard' },
+          { name: 'Account', path: '/account' },
+          { name: 'View', path: '/view' },
+        ].map((item) => (
+          <button
+            key={item.name}
+            onClick={() => (window.location.href = item.path)}
+            className={`text-left px-4 py-2 hover:bg-gray-100 ${
+              item.path === '/dashboard' ? 'bg-blue-50 text-blue-600' : 'text-gray-700'
+            }`}
+          >
+            {item.name}
+          </button>
+        ))}
+
+        <button
+          onClick={async () => {
+            const { error } = await supabase.auth.signOut()
+            if (error) {
+              alert('Logout failed')
+              console.error(error)
+            } else {
+              window.location.href = '/login'
+            }
+          }}
+          className="text-left px-4 py-2 text-red-600 hover:bg-red-50 border-t"
+        >
+          Logout
+        </button>
+      </div>
+    </details>
+  </div>
 </nav>
+
 
 
       <h1 className="text-4xl font-bold mb-8 text-center">
@@ -556,49 +605,81 @@ export default function DashboardPage() {
         </section>
 
         {/* CONTACTS */}
-        {contact && (
-          <section className="bg-white shadow p-4 rounded-lg mb-6">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-2xl font-semibold">Contacts / Links</h2>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.show_contacts}
-                  onChange={(e) => handleToggle('show_contacts', e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="relative w-11 h-6 bg-gray-300 peer-checked:bg-blue-500 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
-              </label>
-            </div>
+{contact && (
+  <section className="bg-white shadow p-4 rounded-lg mb-6">
+    <div className="flex justify-between items-center mb-3">
+      <h2 className="text-2xl font-semibold">Contacts / Links</h2>
+      <label className="flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={settings.show_contacts}
+          onChange={(e) => handleToggle('show_contacts', e.target.checked)}
+          className="sr-only peer"
+        />
+        <div className="relative w-11 h-6 bg-gray-300 peer-checked:bg-blue-500 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
+      </label>
+    </div>
 
-            {[
-              { key: 'email', label: 'Email' },
-              { key: 'phone', label: 'Phone' },
-              { key: 'linkedin_url', label: 'LinkedIn URL' },
-              { key: 'github_url', label: 'GitHub URL' },
-            ].map(({ key, label }) => (
-              <div key={key} className="mb-3">
-                <label className="block text-gray-700 font-medium mb-1">{label}</label>
-                <input
-                  className="border p-2 w-full rounded"
-                  placeholder={`Enter your ${label}`}
-                  value={contact[key] ?? ''}
-                  onChange={(e) => setContact((prev: any) => ({ ...prev, [key]: e.target.value }))}
-                />
-              </div>
-            ))}
+    {/* 各リンク入力欄 */}
+    {[
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'linkedin_url', label: 'LinkedIn URL', toggle: 'show_linkedin' },
+      { key: 'github_url', label: 'GitHub URL', toggle: 'show_github' },
+    ].map(({ key, label, toggle }) => (
+      <div key={key} className="mb-3">
+        <div className="flex justify-between items-center">
+          <label className="block text-gray-700 font-medium mb-1">{label}</label>
+          {/* トグルスイッチ（Email/Phoneには表示しない） */}
+          {toggle && (
+            <label className="flex items-center cursor-pointer">
+              <input
+  type="checkbox"
+  checked={!!settings[toggle]} // ← ここを修正
+  onChange={(e) => handleToggle(toggle, e.target.checked)}
+  className="sr-only peer"
+/>
 
-            <div className="flex gap-3">
-              <button onClick={saveContacts} disabled={contactSaving} className="bg-blue-600 text-white px-4 py-2 rounded">
-                {contactSaving ? 'Saving...' : 'Save Contacts'}
-              </button>
-              <button onClick={async () => {
-                const { data } = await supabase.from('contact_links').select('*').eq('user_id', user.id).single()
-                if (data) setContact(data)
-              }} className="bg-gray-200 px-4 py-2 rounded">Reset</button>
-            </div>
-          </section>
-        )}
+              <div className="relative w-9 h-5 bg-gray-300 peer-checked:bg-blue-500 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-4 after:w-4 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
+            </label>
+          )}
+        </div>
+
+        <input
+          className="border p-2 w-full rounded"
+          placeholder={`Enter your ${label}`}
+          value={contact[key] ?? ''}
+          onChange={(e) => setContact((prev: any) => ({ ...prev, [key]: e.target.value }))}
+        />
+      </div>
+    ))}
+
+    <div className="flex gap-3">
+      <button
+        onClick={saveContacts}
+        disabled={contactSaving}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        {contactSaving ? 'Saving...' : 'Save Contacts'}
+      </button>
+
+      <button
+        onClick={async () => {
+          const { data } = await supabase
+            .from('contact_links')
+            .select('*')
+            .eq('user_id', user.id)
+            .single()
+          if (data) setContact(data)
+        }}
+        className="bg-gray-200 px-4 py-2 rounded"
+      >
+        Reset
+      </button>
+    </div>
+  </section>
+)}
+
       </div>
     </div>
   )
