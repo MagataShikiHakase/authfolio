@@ -8,7 +8,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/libs/supabaseClient'
 import { motion, AnimatePresence } from 'framer-motion'
-//import { Plus, X, User, Lock, Home } from 'lucide-react'
 
 export default function PublicPortfolioPage() {
   const [user, setUser] = useState<any>(null)
@@ -262,7 +261,7 @@ useEffect(() => {
         <div
           className="absolute top-0 left-0 h-full w-1/2"
           style={{ 
-            height: '53%',
+            height: '470px',
             backgroundColor: settings.intro_bg_color_left }}
         ></div>
 
@@ -270,7 +269,7 @@ useEffect(() => {
         <div
           className="absolute top-0 right-0 h-full w-1/2"
           style={{ 
-            height: '53%',
+            height: '470px',
             top: '83px',
             backgroundColor: settings.intro_bg_color_right }}
         ></div>
@@ -295,7 +294,7 @@ useEffect(() => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
-      className="flex flex-col items-center"
+      className="absolute top-[190px] left-1/2 -translate-x-1/2 flex flex-col items-center z-10"
     >
       <div className="bg-white text-black px-12 py-12 rounded-2xl shadow-lg -translate-y-13 relative z-10">
         <h1 className="text-6xl mb-4">
@@ -306,7 +305,7 @@ useEffect(() => {
     </motion.div>
 
     {/* 左下のボタン */}
-    <div className="absolute bottom-24 left-6 flex gap-4 -translate-y-67 z-30 hidden md:flex">
+    <div className="absolute left-[40px] top-[500px] flex gap-4 z-30 hidden md:flex">
       {bottomButtons.map((b) => (
         <button
           key={b.name}
@@ -319,7 +318,7 @@ useEffect(() => {
     </div>
 
     {/* Hello 以下 */}
-    <div className="mt-36 text-center translate-y-12 relative z-10">
+    <div className="absolute top-[700px] left-1/2 -translate-x-1/2 text-center z-10">
       <h2 className="text-5xl mb-6">Hello.</h2>
       <p className="max-w-2xl mx-auto text-lg leading-relaxed">{user.description}</p>
     </div>
@@ -435,11 +434,12 @@ useEffect(() => {
     {/* メニュー展開部分 */}
     {showAssistiveMenu && (
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
-        className="absolute bottom-16 right-0 bg-white text-black border rounded-xl shadow-lg p-4 w-60"
-      >
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: 10 }}
+  className="absolute bottom-16 right-0 bg-white text-black border rounded-xl shadow-lg p-4 w-60
+           max-h-[60vh] sm:max-h-[80vh] overflow-y-auto"
+>
         <h3 className="font-semibold mb-3 text-center">Assistive Menu</h3>
 
         <div className="space-y-2">
