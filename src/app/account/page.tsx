@@ -5,6 +5,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/libs/supabaseClient'
 import { Eye, EyeOff, Copy, Trash2, Mail } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+
 
 type SectionSetting = {
   show_about: boolean
@@ -33,6 +35,7 @@ type PublicID = {
 }
 
 export default function AccountPage() {
+  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -47,7 +50,11 @@ export default function AccountPage() {
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+
+      if (!user) {
+        router.push('/login')  // 👈 ログインしていなければリダイレクト
+        return
+      }
       setUser(user)
       setEmail(user.email || '')
 

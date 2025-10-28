@@ -93,17 +93,6 @@ export default function DashboardPage() {
     fetchData()
   }, [router])
 
-  // === Toggle (settings) - keep immediate
-  // const handleToggle = async (key: keyof SectionSetting, value: boolean) => {
-  //   if (!settings || !user) return
-  //   const { data, error } = await supabase
-  //     .from('user_settings')
-  //     .update({ [key]: value })
-  //     .eq('user_id', user.id)
-  //     .select()
-  //     .single()
-  //   if (!error) setSettings(data)
-  // }
   const handleToggle = async (field: string, value: boolean) => {
   setSettings((prev) => ({ ...prev, [field]: value }));
   await supabase.from('user_settings').update({ [field]: value }).eq('user_id', user.id);
@@ -114,7 +103,8 @@ export default function DashboardPage() {
 
   // Create a local new item (not saved yet)
   const createLocalNew = (setter: any, defaults: any) => {
-    const temp = { ...defaults, id: Date.now() * -1, _isNew: true } // negative id = temporary
+    const temp = { ...defaults, id: -(Math.floor(Math.random() * 1000000)), _isNew: true }
+
     setter((prev: any[]) => [temp, ...prev])
   }
 
@@ -125,18 +115,22 @@ export default function DashboardPage() {
 
     try {
       if (item._isNew) {
-        // insert
-        const { data: inserted, error } = await supabase.from(table).insert([{ ...item, user_id: user.id }]).select()
-        if (error) throw error
-        // replace temp in list with inserted rows (usually one)
-        setter((prev: any[]) => {
-          return prev.map((p: any) => (p.id === item.id ? inserted[0] : p))
-        })
+        const { _isNew, ...payload } = item
+  const { data: inserted, error } = await supabase
+    .from(table)
+    .insert([{ ...payload, user_id: user.id }])
+    .select()
+  if (error) throw error
+  setter((prev: any[]) => prev.map((p: any) => (p.id === item.id ? inserted[0] : p)))
       } else {
-        // update
-        const { data: updated, error } = await supabase.from(table).update(item).eq('id', item.id).select()
-        if (error) throw error
-        setter((prev: any[]) => prev.map((p: any) => (p.id === item.id ? updated[0] : p)))
+        const { _isNew, ...payload } = item
+  const { data: updated, error } = await supabase
+    .from(table)
+    .update(payload)
+    .eq('id', item.id)
+    .select()
+  if (error) throw error
+  setter((prev: any[]) => prev.map((p: any) => (p.id === item.id ? updated[0] : p)))
       }
     } catch (err: any) {
       console.error('Save error:', err)

@@ -8,8 +8,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/libs/supabaseClient'
 import { motion, AnimatePresence } from 'framer-motion'
+import AnimatedHello from "../components/AnimatedHello"
+import SectionTitle from "../components/SectionTitle"
+import { useRouter } from 'next/navigation'
 
 export default function PublicPortfolioPage() {
+  const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
   const [sections, setSections] = useState<Record<string, any[]>>({})
@@ -32,7 +36,10 @@ export default function PublicPortfolioPage() {
   const [createdPublicId, setCreatedPublicId] = useState<string | null>(null)
 
   const handleCreatePublicId = async () => {
-    if (!user) return alert('ユーザーが未ログインです。')
+    if (!user) {
+        router.push('/login')
+        return
+      }
 
     const { data, error } = await supabase.from('public_ids').insert([
       {
@@ -245,13 +252,13 @@ useEffect(() => {
 
 
         {/* スクロールセクション */}
-        <div className="snap-y snap-mandatory h-screen overflow-y-scroll scroll-smooth">
-          {scrollSections.map(({ id, label }) => (
-            <section
-              key={id}
-              id={id}
-              className="snap-start h-screen flex flex-col justify-center items-center px-8 text-center relative"
-            >
+<div className="snap-y snap-mandatory h-screen overflow-y-scroll scroll-smooth">
+  {scrollSections.map(({ id, label }) => (
+    <section
+      key={id}
+      id={id}
+      className="snap-start h-screen flex flex-col justify-center items-center px-8 text-center relative"
+    >
               {id === 'intro' && (
   <>
     {/* 背景2色部分 — show_intro_bgがtrueのときのみ描画 */}
@@ -297,10 +304,10 @@ useEffect(() => {
       className="absolute top-[190px] left-1/2 -translate-x-1/2 flex flex-col items-center z-10"
     >
       <div className="bg-white text-black px-12 py-12 rounded-2xl shadow-lg -translate-y-13 relative z-10">
-        <h1 className="text-6xl mb-4">
+        <h1 className="text-6xl mb-4 shiny1-text">
           {user.first_name} {user.last_name}
         </h1>
-        <p className="text-xl mb-8">{user.major_occupation}</p>
+        <p className="text-xl mb-8 shiny1-text">{user.major_occupation}</p>
       </div>
     </motion.div>
 
@@ -319,9 +326,9 @@ useEffect(() => {
 
     {/* Hello 以下 */}
     <div className="absolute top-[700px] left-1/2 -translate-x-1/2 text-center z-10">
-      <h2 className="text-5xl mb-6">Hello.</h2>
-      <p className="max-w-2xl mx-auto text-lg leading-relaxed">{user.description}</p>
-    </div>
+          <AnimatedHello />
+          <p className="max-w-2xl mx-auto text-lg leading-relaxed mt-4">{user.description}</p>
+        </div>
   </>
 )}
 
@@ -330,96 +337,107 @@ useEffect(() => {
 
 
 
-              {/* その他セクション */}
               {id !== 'intro' && (
-                <motion.div initial={{ y: 50, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }}>
-                  <h2 className="text-4xl mb-6">{label}</h2>
+        <div className="w-full flex flex-col items-center justify-center relative z-10 max-w-4xl">
+          {/* タイトル部分: 画面中央に固定 */}
+          <SectionTitle title={label} />
 
-                  {id === 'aboutme' &&
-                    sections.about_me?.map((a) => (
-                      <p key={a.id} className="max-w-2xl mx-auto leading-relaxed">
-                        {a.description}
-                      </p>
-                    ))}
+          {/* 文章部分: タイトル下でスクロール可能 */}
+          <div className="overflow-y-auto max-h-[calc(100vh-300px)] px-4 text-left w-full">
+            {id === 'aboutme' &&
+              sections.about_me?.map((a) => (
+                <p key={a.id} className="leading-relaxed mb-4 text-center">
+                  {a.description}
+                </p>
+              ))}
 
-                  {id === 'skills' &&
-                    sections.skills?.map((s) => (
-                      <div key={s.id} className="mb-4">
-                        <p className="font-bold">{s.skill_name}</p>
-                        <p>{s.description}</p>
-                      </div>
-                    ))}
+            {id === 'skills' &&
+              sections.skills?.map((s) => (
+                <div key={s.id} className="leading-relaxed mb-4 text-center">
+                  <p className="font-bold">{s.skill_name}</p>
+                  <p>{s.description}</p>
+                </div>
+              ))}
 
-                  {id === 'certificates' &&
-                    sections.certificates?.map((p) => (
-                      <div key={p.id}>
-                        <p className="font-bold">{p.certificate_name}</p>
-                        <p>{p.description}</p>
-                      </div>
-                    ))}
+            {id === 'certificates' &&
+              sections.certificates?.map((c) => (
+                <div key={c.id} className="leading-relaxed mb-4 text-center">
+                  <p className="font-bold">{c.certificate_name}</p>
+                  <p>{c.description}</p>
+                </div>
+              ))}
 
-                  {id === 'awards' &&
-                    sections.awards?.map((p) => (
-                      <div key={p.id}>
-                        <p className="font-bold">{p.award_name}</p>
-                        <p>{p.description}</p>
-                      </div>
-                    ))}
+            {id === 'awards' &&
+              sections.awards?.map((a) => (
+                <div key={a.id} className="leading-relaxed mb-4 text-center">
+                  <p className="font-bold">{a.award_name}</p>
+                  <p>{a.description}</p>
+                </div>
+              ))}
 
-                  {id === 'projects' &&
-                    sections.projects?.map((p) => (
-                      <div key={p.id}>
-                        <p className="font-bold">{p.project_name}</p>
-                        <p>{p.description}</p>
-                      </div>
-                    ))}
+            {id === 'projects' &&
+              sections.projects?.map((p) => (
+                <div key={p.id} className="leading-relaxed mb-4 text-center">
+                  <p className="font-bold">{p.project_name}</p>
+                  <p>{p.description}</p>
+                </div>
+              ))}
 
-                  {id === 'achievements' &&
-                    sections.achievements?.map((p) => (
-                      <div key={p.id}>
-                        <p className="font-bold">{p.achievement_name}</p>
-                        <p>{p.description}</p>
-                      </div>
-                    ))}
+            {id === 'achievements' &&
+              sections.achievements?.map((a) => (
+                <div key={a.id} className="leading-relaxed mb-4 text-center">
+                  <p className="font-bold">{a.achievement_name}</p>
+                  <p>{a.description}</p>
+                </div>
+              ))}
 
-                  { id === 'documents' && (
-  <div className="flex flex-wrap justify-center gap-4">
-    {sections.documents
-      ?.filter((d) => d.is_public)
-      .map((d) => (
-        <button
-          key={d.id}
-          onClick={() => window.open(d.document_url, '_blank')}
-          className="border px-6 py-2 hover:bg-black hover:text-white transition"
-        >
-          Download {d.document_name}
-        </button>
-      ))}
+            {id === 'documents' && (
+              <div className="flex flex-wrap justify-center gap-4 max-w-2xl mx-auto">
+                {sections.documents
+                  ?.filter((d) => d.is_public)
+                  .map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => window.open(d.document_url, '_blank')}
+                      className="border px-6 py-2 hover:bg-black hover:text-white transition"
+                    >
+                      Download {d.document_name}
+                    </button>
+                  ))}
+                {sections.documents?.filter((d) => d.is_public).length === 0 && (
+                  <p className="text-gray-500 mt-4">No public documents available.</p>
+                )}
+              </div>
+            )}
 
-    {sections.documents?.filter((d) => d.is_public).length === 0 && (
-      <p className="text-gray-500 mt-4">No public documents available.</p>
-    )}
-  </div>
-)}
-
-                  {id === 'contactlinks' && contact && (
-                    <ul className="space-y-2">
-                      {contact.email && <li>Email: {contact.email}</li>}
-                      {contact.phone && <li>Phone: {contact.phone}</li>}
-                      {settings.show_github && contact.github_url && (
-      <li>GitHub: <a href={contact.github_url} target="_blank" className="text-blue-600">{contact.github_url}</a></li>
-    )}
-
-    {settings.show_linkedin && contact.linkedin_url && (
-      <li>LinkedIn: <a href={contact.linkedin_url} target="_blank" className="text-blue-600">{contact.linkedin_url}</a></li>
-    )}
-                    </ul>
-                  )}
-                </motion.div>
-              )}
-            </section>
-          ))}
+            {id === 'contactlinks' && contact && (
+              <ul className="leading-relaxed mb-4 text-center">
+                {contact.email && <li>Email: {contact.email}</li>}
+                {contact.phone && <li>Phone: {contact.phone}</li>}
+                {settings.show_github && contact.github_url && (
+                  <li>
+                    GitHub:{' '}
+                    <a href={contact.github_url} target="_blank" className="text-blue-600">
+                      {contact.github_url}
+                    </a>
+                  </li>
+                )}
+                {settings.show_linkedin && contact.linkedin_url && (
+                  <li>
+                    LinkedIn:{' '}
+                    <a href={contact.linkedin_url} target="_blank" className="text-blue-600">
+                      {contact.linkedin_url}
+                    </a>
+                  </li>
+                )}
+              </ul>
+            )}
+          </div>
         </div>
+      )}
+    </section>
+  ))}
+</div>
         {/* AssistiveTouch ボタン */}
 <div className="fixed bottom-10 right-10 z-50">
   {/* メインの丸ボタン */}
