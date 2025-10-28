@@ -1,12 +1,14 @@
 import '../styles/globals.css'
-import { Inter } from 'next/font/google'
-import { Italiana } from 'next/font/google'
+import { Inter, Italiana } from 'next/font/google'
 
 const inter = Inter({ subsets: ['latin'] })
 const italiana = Italiana({ weight: '400', subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Authfolio | Create Your Online Portfolio Effortlessly',
+  title: {
+    default: 'Authfolio | Create Your Online Portfolio Effortlessly',
+    template: '%s | Authfolio',
+  },
   description:
     'Authfolio lets you instantly build a beautiful online portfolio by just entering your information. Designed for students, engineers, and job seekers.',
   keywords: [
@@ -15,8 +17,11 @@ export const metadata = {
     'authfolio',
     'nextjs portfolio',
     'job hunting website',
+    'online resume',
+    'developer portfolio',
   ],
-  authors: [{ name: 'Yuma Fukazawa' }],
+  authors: [{ name: 'Yuma Fukazawa', url: 'https://authfolio.vercel.app' }],
+  metadataBase: new URL('https://authfolio.vercel.app'),
   openGraph: {
     title: 'Authfolio | Beautiful Online Resume Builder',
     description:
@@ -36,20 +41,39 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Authfolio',
+    title: 'Authfolio | Create Your Portfolio Effortlessly',
     description: 'Instantly create a stunning online portfolio website.',
     images: ['/og-image.png'],
+    creator: '@your_twitter_handle', // ← 持ってたら追加
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
   icons: {
     icon: '/newFavicon.ico',
+    shortcut: '/newFavicon.ico',
+    apple: '/newFavicon.ico',
+  },
+  alternates: {
+    canonical: 'https://authfolio.vercel.app',
   },
 }
 
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <body className={italiana.className}>{children}</body>
+      <body className={`${inter.className} ${italiana.className}`}>
+        {children}
+      </body>
     </html>
   )
 }
