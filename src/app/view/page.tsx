@@ -116,7 +116,7 @@ useEffect(() => {
       }
 
       const { data: userInfo } = await supabase.from('users').select('*').eq('id', user.id).single()
-      const { data: setting } = await supabase.from('user_settings').select('*').eq('user_id', user.id).single()
+      const { data: setting } = await supabase.from('user_settings').select('*').eq('user_id', user.id).maybeSingle()
       const { data: contactData } = await supabase.from('contact_links').select('*').eq('user_id', user.id).single()
 
       const tables = ['about_me', 'skills', 'certificates', 'awards', 'projects', 'achievements', 'documents']

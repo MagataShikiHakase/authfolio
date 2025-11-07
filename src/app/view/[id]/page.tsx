@@ -7,11 +7,14 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/libs/supabaseClient'
+import { useParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import AnimatedHello from "../../components/AnimatedHello"
 import SectionTitle from "../../components/SectionTitle"
 
 export default function PublicPortfolioPage() {
+  const params = useParams()                     // ✅ useEffectの外に移動
+  const publicId = params?.id   
   const [user, setUser] = useState<any>(null)
   const [settings, setSettings] = useState<any>(null)
   const [sections, setSections] = useState<Record<string, any[]>>({})
@@ -102,48 +105,103 @@ useEffect(() => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        alert('ログインが必要です')
+      
+
+      if (!publicId) {
+        console.error('publicId not found in URL')
         return
       }
 
-      const { data: userInfo } = await supabase.from('users').select('*').eq('id', user.id).single()
-      const { data: setting } = await supabase.from('user_settings').select('*').eq('user_id', user.id).single()
-      const { data: contactData } = await supabase.from('contact_links').select('*').eq('user_id', user.id).single()
+      // ✅ public_ids テーブルから対象ユーザー情報取得
+      const { data: publicData, error: publicErr } = await supabase
+        .from('public_ids')
+        .select('*')
+        .eq('id', publicId)
+        .single()
 
-      const tables = ['about_me', 'skills', 'certificates', 'awards', 'projects', 'achievements', 'documents']
+      if (publicErr || !publicData) {
+        console.error('public_id not found:', publicErr)
+        setLoading(false)
+        return
+      }
+
+      // ✅ user_id から各種データを取得
+      const userId = publicData.user_id
+
+      const { data: userInfo } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      const { data: contactData } = await supabase
+        .from('contact_links')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      const { data: setting } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      // ✅ 公開設定（public_idsの中身を優先）
+      const settingsToUse = {
+        ...setting,
+        show_about: publicData.show_about,
+        show_skills: publicData.show_skills,
+        show_certificates: publicData.show_certificates,
+        show_awards: publicData.show_awards,
+        show_projects: publicData.show_projects,
+        show_achievements: publicData.show_achievements,
+        show_documents: publicData.show_documents,
+        show_contacts: publicData.show_contacts,
+        show_intro_bg: publicData.show_intro_bg,
+        intro_bg_color_left: publicData.intro_bg_color_left,
+        intro_bg_color_right: publicData.intro_bg_color_right,
+      }
+
+      // ✅ 各セクションを「公開ONのみ」取得
+      const tables = [
+        'about_me',
+        'skills',
+        'certificates',
+        'awards',
+        'projects',
+        'achievements',
+        'documents',
+      ]
       const fetched: Record<string, any[]> = {}
       for (const table of tables) {
         const toggleKey = `show_${table === 'about_me' ? 'about' : table}`
-        if (setting?.[toggleKey]) {
-          const { data } = await supabase.from(table).select('*').eq('user_id', user.id)
+        if (settingsToUse[toggleKey]) {
+          const { data } = await supabase.from(table).select('*').eq('user_id', userId)
           fetched[table] = data || []
         }
       }
 
       setUser(userInfo)
-      setSettings(setting)
+      setSettings(settingsToUse)
       setSections(fetched)
       setContact(contactData)
       setPublicSettings({
-      about: setting?.show_about ?? false,
-      skills: setting?.show_skills ?? false,
-      certificates: setting?.show_certificates ?? false,
-      awards: setting?.show_awards ?? false,
-      projects: setting?.show_projects ?? false,
-      achievements: setting?.show_achievements ?? false,
-      documents: setting?.show_documents ?? false,
-      contacts: setting?.show_contacts ?? false,
-    })
+        about: settingsToUse.show_about ?? false,
+        skills: settingsToUse.show_skills ?? false,
+        certificates: settingsToUse.show_certificates ?? false,
+        awards: settingsToUse.show_awards ?? false,
+        projects: settingsToUse.show_projects ?? false,
+        achievements: settingsToUse.show_achievements ?? false,
+        documents: settingsToUse.show_documents ?? false,
+        contacts: settingsToUse.show_contacts ?? false,
+      })
+
       setLoading(false)
       setTimeout(() => setPageLoaded(true), 300)
     }
 
     fetchData()
-  }, [])
+  }, [publicId])
 
   if (loading) return <p className="text-center mt-10">Loading...</p>
   if (!user || !settings) return <p>No data</p>
