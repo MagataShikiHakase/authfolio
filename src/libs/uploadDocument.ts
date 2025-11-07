@@ -2,7 +2,7 @@
 import { supabase } from '@/libs/supabaseClient'
 
 export async function uploadDocument(file: File, userId: string) {
-  const folderPath = `documents/${userId}`
+  const folderPath = `${userId}/${file.name}`
   const filePath = `${folderPath}/${file.name}`
 
   // ① 既存ファイル確認

@@ -324,11 +324,12 @@ useEffect(() => {
       ))}
     </div>
 
-    {/* Hello 以下 */}
-    <div className="absolute top-[700px] left-1/2 -translate-x-1/2 text-center z-10">
-          <AnimatedHello />
-          <p className="max-w-2xl mx-auto text-lg leading-relaxed mt-4">{user.description}</p>
-        </div>
+    {/* Hello 以下（修正版） */}
+<div className="relative mt-[520px] md:mt-[700px] text-center z-10 px-4">
+  <AnimatedHello />
+  <p className="max-w-2xl mx-auto text-lg leading-relaxed mt-4">{user.description}</p>
+</div>
+
   </>
 )}
 
