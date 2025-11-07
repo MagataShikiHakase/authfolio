@@ -73,6 +73,14 @@ const [introRightColor, setIntroRightColor] = useState<string>('#383c3c')
 const [introTopPx, setIntroTopPx] = useState<number | string>(83) // 必要なら上位置を数値で管理
 const [introHeight, setIntroHeight] = useState<string>('53%') // 例: '53%' や '300px'
 const [introLoadingSave, setIntroLoadingSave] = useState(false)
+const [isMobile, setIsMobile] = useState(false)
+
+useEffect(() => {
+  const checkWidth = () => setIsMobile(window.innerWidth < 768) // md未満
+  checkWidth()
+  window.addEventListener('resize', checkWidth)
+  return () => window.removeEventListener('resize', checkWidth)
+}, [])
 
 // sync settings -> local state when settings loaded / changed
 useEffect(() => {
@@ -221,11 +229,27 @@ useEffect(() => {
   ].filter((b) => b.show)
 
   const allButtons = [...topButtons, ...bottomButtons]
-  const scrollSections = [
-    { id: 'intro', label: 'Intro' },
-    ...allButtons.map((b) => ({ id: b.name.toLowerCase().replace(/\s|\//g, ''), label: b.name })),
-  ]
+  // const scrollSections = [
+  //   { id: 'intro', label: 'Intro' },
+  //   ...allButtons.map((b) => ({ id: b.name.toLowerCase().replace(/\s|\//g, ''), label: b.name })),
+  // ]
 
+  const scrollSections = isMobile
+  ? [
+      { id: 'intro', label: 'Intro' },
+      { id: 'hello', label: 'Hello' }, // 👈 モバイル時のみHelloを追加
+      ...allButtons.map((b) => ({
+        id: b.name.toLowerCase().replace(/\s|\//g, ''),
+        label: b.name,
+      })),
+    ]
+  : [
+      { id: 'intro', label: 'Intro' }, // PCではHelloを含めない
+      ...allButtons.map((b) => ({
+        id: b.name.toLowerCase().replace(/\s|\//g, ''),
+        label: b.name,
+      })),
+    ]
   return (
     <AnimatePresence>
       {!pageLoaded && (
@@ -380,16 +404,22 @@ useEffect(() => {
       ))}
     </div>
 
-    {/* Hello 以下 */}
-    <div className="absolute top-[700px] left-1/2 -translate-x-1/2 text-center z-10">
-      <AnimatedHello />
-      <p className="max-w-2xl mx-auto text-lg leading-relaxed mt-4">{user.description}</p>
-    </div>
-  </>
+    {!isMobile && (
+      <div className="relative mt-[520px] md:mt-[700px] text-center z-10 px-4 -translate-y-20">
+        <AnimatedHello />
+        <p className="max-w-2xl mx-auto text-lg leading-relaxed mt-4">{user.description}</p>
+      </div>
+    )}
+      </>
 )}
 
 
-
+{id === 'hello' && isMobile && (
+  <div className="flex flex-col items-center justify-center text-center px-6">
+    <AnimatedHello />
+    <p className="max-w-2xl mx-auto text-lg leading-relaxed mt-4">{user.description}</p>
+  </div>
+)}
 
 
 
@@ -397,7 +427,7 @@ useEffect(() => {
                 
         <div className="w-full flex flex-col items-center justify-center relative z-10 max-w-4xl">
           {/* タイトル部分: 画面中央に固定 */}
-          <SectionTitle title={label} />
+          {id !== 'hello' && <SectionTitle title={label} />}
 
           <div className="overflow-y-auto max-h-[calc(100vh-300px)] px-4 text-left w-full">
             {id === 'aboutme' &&
